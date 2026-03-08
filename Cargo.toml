@@ -1,0 +1,20 @@
+[package]
+name = "zeroclaw-run-builder"
+version = "0.1.0"
+edition = "2021"
+authors = ["gcy529 <your-email@example.com>"]
+description = "ZeroClaw build tool for OpenWrt"
+license = "MIT"
+repository = "https://github.com/gcy529/zeroclaw-run-builder"
+
+[[bin]]
+name = "zeroclaw-builder"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+anyhow = "1.0"
+
+[profile.release]
+opt-level = 3
+lto = true
