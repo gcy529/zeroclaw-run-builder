@@ -7,10 +7,6 @@ PKG_RELEASE:=1
 PKG_MAINTAINER:=gcy529 <your-email@example.com>
 PKG_LICENSE:=MIT
 
-PKG_SOURCE:=zeroclaw
-PKG_SOURCE_URL:=https://github.com/zeroclaw-labs/zeroclaw/releases/download/v$(PKG_VERSION)/
-PKG_SOURCE_VERSION:=$(PKG_VERSION)
-
 include $(INCLUDE_DIR)/package.mk
 
 define Package/zeroclaw
@@ -23,6 +19,11 @@ endef
 
 define Package/zeroclaw/description
   ZeroClaw is a proxy tool for OpenWrt routers.
+endef
+
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	$(CP) ./files/* $(PKG_BUILD_DIR)/
 endef
 
 define Package/zeroclaw/install
