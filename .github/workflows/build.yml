@@ -38,6 +38,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Debug - List files
+      run: |
+        echo "=== Current directory ==="
+        pwd
+        echo "=== List all files ==="
+        find . -type f | head -50
+        echo "=== Check feeds directory ==="
+        ls -la feeds/ 2>/dev/null || echo "feeds directory not found"
+        ls -la feeds/zeroclaw/ 2>/dev/null || echo "feeds/zeroclaw not found"
+        ls -la feeds/zeroclaw/files/ 2>/dev/null || echo "feeds/zeroclaw/files not found"
+    
     - name: Download zeroclaw binary
       uses: actions/download-artifact@v4
       with:
@@ -74,17 +85,12 @@ jobs:
         tar -czvf control.tar.gz ./control
         tar -czvf data.tar.gz ./data
         
-        mv control.tar.gz /tmp/zeroclaw-pkg/
-        mv data.tar.gz /tmp/zeroclaw-pkg/
-        
-        cd /tmp/zeroclaw-pkg
         tar -czvf zeroclaw_0.1.0-1_aarch64_generic.ipk ./debian-binary ./control.tar.gz ./data.tar.gz
         
     - name: Create luci-app-zeroclaw ipk structure
       run: |
         mkdir -p /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/controller
         mkdir -p /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/model/cbi
-        mkdir -p /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/view/zeroclaw
         mkdir -p /tmp/luci-app-zeroclaw-pkg/control
         
         cp feeds/zeroclaw/luci-app-zeroclaw/luasrc/controller/zeroclaw.lua /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/controller/
@@ -106,10 +112,6 @@ jobs:
         tar -czvf control.tar.gz ./control
         tar -czvf data.tar.gz ./data
         
-        mv control.tar.gz /tmp/luci-app-zeroclaw-pkg/
-        mv data.tar.gz /tmp/luci-app-zeroclaw-pkg/
-        
-        cd /tmp/luci-app-zeroclaw-pkg
         tar -czvf luci-app-zeroclaw_0.1.0-1_all.ipk ./debian-binary ./control.tar.gz ./data.tar.gz
         
     - name: Upload packages
