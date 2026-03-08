@@ -43,6 +43,16 @@ opkg install zeroclaw_0.1.0_x86_64.ipk
 2. 进入 `iStore` 应用商店
 3. 搜索 "ZeroClaw" 并安装
 
+### ImmortalWrt 安装 iStore 商店
+
+如果你的 ImmortalWrt 固件没有 iStore 商店，可以使用以下命令一键安装：
+
+```bash
+wget -qO imm.sh https://cafe.cpolar.top/wkdaily/zero3/raw/branch/main/zero3/imm.sh && chmod +x imm.sh && ./imm.sh
+```
+
+安装完成后，刷新页面即可在 LuCI 界面看到 iStore 应用商店。
+
 ---
 
 ## 🙏 致谢
