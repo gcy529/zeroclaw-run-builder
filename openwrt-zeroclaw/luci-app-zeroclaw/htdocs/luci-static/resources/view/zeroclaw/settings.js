@@ -1,6 +1,6 @@
 'use strict';
-return renderView-main extends Vue
-{
+
+export default {
     data() {
         return {
             config: {},
