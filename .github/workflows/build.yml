@@ -51,10 +51,10 @@ jobs:
     
     - name: Copy zeroclaw binary to package
       run: |
-        mkdir -p openwrt-zeroclaw/zeroclaw/files/
-        cp /tmp/zeroclaw-binary/zeroclaw openwrt-zeroclaw/zeroclaw/files/
-        chmod +x openwrt-zeroclaw/zeroclaw/files/zeroclaw
-        ls -la openwrt-zeroclaw/zeroclaw/files/
+        mkdir -p zeroclaw-package/zeroclaw/files/
+        cp /tmp/zeroclaw-binary/zeroclaw zeroclaw-package/zeroclaw/files/
+        chmod +x zeroclaw-package/zeroclaw/files/zeroclaw
+        ls -la zeroclaw-package/zeroclaw/files/
     
     - name: Build aarch64 packages
       uses: openwrt/gh-action-sdk@v5
