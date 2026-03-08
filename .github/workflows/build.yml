@@ -76,27 +76,27 @@ jobs:
         ls -la /tmp/zeroclaw-ipk/data/etc/init.d/
         
         cat > /tmp/zeroclaw-ipk/control/control << 'EOF'
-        Package: zeroclaw
-        Version: 0.1.0-1
-        Architecture: aarch64_generic
-        Description: ZeroClaw proxy tool
-        Section: net
-        Priority: optional
-        Maintainer: gcy529
-        Depends: libc
-        EOF
+Package: zeroclaw
+Version: 0.1.0-1
+Architecture: aarch64_generic
+Description: ZeroClaw proxy tool
+Section: net
+Priority: optional
+Maintainer: gcy529
+Depends: libc
+EOF
         
         echo "2.0" > /tmp/zeroclaw-ipk/debian-binary
         
         cd /tmp/zeroclaw-ipk
-        tar -czvf /tmp/control.tar.gz ./control
-        tar -czvf /tmp/data.tar.gz ./data
+        tar -czvf /tmp/zeroclaw-control.tar.gz ./control
+        tar -czvf /tmp/zeroclaw-data.tar.gz ./data
         
         cd /tmp
-        tar -czvf zeroclaw_0.1.0-1_aarch64_generic.ipk ./debian-binary ./control.tar.gz ./data.tar.gz
+        tar -czvf zeroclaw_0.1.0-1_aarch64_generic.ipk ./debian-binary ./zeroclaw-control.tar.gz ./zeroclaw-data.tar.gz
         
         ls -la /tmp/zeroclaw_0.1.0-1_aarch64_generic.ipk
-        
+    
     - name: Create luci-app-zeroclaw ipk
       run: |
         set -x
@@ -105,22 +105,22 @@ jobs:
         mkdir -p /tmp/luci-ipk/data/usr/lib/lua/luci/model/cbi
         mkdir -p /tmp/luci-ipk/control
         
-        cp feeds/zeroclaw/luci-app-zeroclaw/luasrc/controller/zeroclaw.lua /tmp/luci-ipk/data/usr/lib/lua/luci/controller/
-        cp feeds/zeroclaw/luci-app-zeroclaw/luasrc/model/cbi/zeroclaw.lua /tmp/luci-ipk/data/usr/lib/lua/luci/model/cbi/
+        cp feeds/luci-app-zeroclaw/luasrc/controller/zeroclaw.lua /tmp/luci-ipk/data/usr/lib/lua/luci/controller/
+        cp feeds/luci-app-zeroclaw/luasrc/model/cbi/zeroclaw.lua /tmp/luci-ipk/data/usr/lib/lua/luci/model/cbi/
         
         ls -la /tmp/luci-ipk/data/usr/lib/lua/luci/controller/
         ls -la /tmp/luci-ipk/data/usr/lib/lua/luci/model/cbi/
         
         cat > /tmp/luci-ipk/control/control << 'EOF'
-        Package: luci-app-zeroclaw
-        Version: 0.1.0-1
-        Architecture: all
-        Description: ZeroClaw LuCI interface
-        Section: luci
-        Priority: optional
-        Maintainer: gcy529
-        Depends: luci,zeroclaw
-        EOF
+Package: luci-app-zeroclaw
+Version: 0.1.0-1
+Architecture: all
+Description: ZeroClaw LuCI interface
+Section: luci
+Priority: optional
+Maintainer: gcy529
+Depends: luci,zeroclaw
+EOF
         
         echo "2.0" > /tmp/luci-ipk/debian-binary
         
@@ -132,7 +132,7 @@ jobs:
         tar -czvf luci-app-zeroclaw_0.1.0-1_all.ipk ./debian-binary ./luci-control.tar.gz ./luci-data.tar.gz
         
         ls -la /tmp/luci-app-zeroclaw_0.1.0-1_all.ipk
-        
+    
     - name: Upload packages
       uses: actions/upload-artifact@v4
       with:
