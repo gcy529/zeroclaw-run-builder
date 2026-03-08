@@ -13,6 +13,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Cache Rust dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          zeroclaw/target
+        key: ${{ runner.os }}-rust-${{ hashFiles('zeroclaw/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-rust-
+    
     - name: Clone zeroclaw source
       run: git clone https://github.com/zeroclaw-labs/zeroclaw.git
     
@@ -38,24 +49,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Debug - List files
-      run: |
-        echo "=== Current directory ==="
-        pwd
-        echo "=== List all files ==="
-        find . -type f | head -50
-        echo "=== Check feeds directory ==="
-        ls -la feeds/ 2>/dev/null || echo "feeds directory not found"
-        ls -la feeds/zeroclaw/ 2>/dev/null || echo "feeds/zeroclaw not found"
-        ls -la feeds/zeroclaw/files/ 2>/dev/null || echo "feeds/zeroclaw/files not found"
-    
     - name: Download zeroclaw binary
       uses: actions/download-artifact@v4
       with:
         name: zeroclaw-aarch64
         path: /tmp/zeroclaw-binary
     
-    - name: Create zeroclaw ipk structure
+    - name: Create zeroclaw ipk
       run: |
         mkdir -p /tmp/zeroclaw-pkg/data/usr/bin
         mkdir -p /tmp/zeroclaw-pkg/data/etc/config
@@ -82,21 +82,20 @@ jobs:
         echo "2.0" > /tmp/zeroclaw-pkg/debian-binary
         
         cd /tmp/zeroclaw-pkg
-        tar -czvf control.tar.gz ./control
-        tar -czvf data.tar.gz ./data
+        tar -czvf control.tar.gz -C /tmp/zeroclaw-pkg control
+        tar -czvf data.tar.gz -C /tmp/zeroclaw-pkg data
+        tar -czvf zeroclaw_0.1.0-1_aarch64_generic.ipk debian-binary control.tar.gz data.tar.gz
         
-        tar -czvf zeroclaw_0.1.0-1_aarch64_generic.ipk ./debian-binary ./control.tar.gz ./data.tar.gz
-        
-    - name: Create luci-app-zeroclaw ipk structure
+    - name: Create luci-app-zeroclaw ipk
       run: |
-        mkdir -p /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/controller
-        mkdir -p /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/model/cbi
-        mkdir -p /tmp/luci-app-zeroclaw-pkg/control
+        mkdir -p /tmp/luci-pkg/data/usr/lib/lua/luci/controller
+        mkdir -p /tmp/luci-pkg/data/usr/lib/lua/luci/model/cbi
+        mkdir -p /tmp/luci-pkg/control
         
-        cp feeds/zeroclaw/luci-app-zeroclaw/luasrc/controller/zeroclaw.lua /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/controller/
-        cp feeds/zeroclaw/luci-app-zeroclaw/luasrc/model/cbi/zeroclaw.lua /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/model/cbi/
+        cp feeds/zeroclaw/luci-app-zeroclaw/luasrc/controller/zeroclaw.lua /tmp/luci-pkg/data/usr/lib/lua/luci/controller/
+        cp feeds/zeroclaw/luci-app-zeroclaw/luasrc/model/cbi/zeroclaw.lua /tmp/luci-pkg/data/usr/lib/lua/luci/model/cbi/
         
-        cd /tmp/luci-app-zeroclaw-pkg/control
+        cd /tmp/luci-pkg/control
         echo "Package: luci-app-zeroclaw" > control
         echo "Version: 0.1.0-1" >> control
         echo "Architecture: all" >> control
@@ -106,13 +105,12 @@ jobs:
         echo "Maintainer: gcy529" >> control
         echo "Depends: luci,zeroclaw" >> control
         
-        echo "2.0" > /tmp/luci-app-zeroclaw-pkg/debian-binary
+        echo "2.0" > /tmp/luci-pkg/debian-binary
         
-        cd /tmp/luci-app-zeroclaw-pkg
-        tar -czvf control.tar.gz ./control
-        tar -czvf data.tar.gz ./data
-        
-        tar -czvf luci-app-zeroclaw_0.1.0-1_all.ipk ./debian-binary ./control.tar.gz ./data.tar.gz
+        cd /tmp/luci-pkg
+        tar -czvf control.tar.gz -C /tmp/luci-pkg control
+        tar -czvf data.tar.gz -C /tmp/luci-pkg data
+        tar -czvf luci-app-zeroclaw_0.1.0-1_all.ipk debian-binary control.tar.gz data.tar.gz
         
     - name: Upload packages
       uses: actions/upload-artifact@v4
@@ -120,4 +118,4 @@ jobs:
         name: zeroclaw-packages-aarch64
         path: |
           /tmp/zeroclaw-pkg/zeroclaw_0.1.0-1_aarch64_generic.ipk
-          /tmp/luci-app-zeroclaw-pkg/luci-app-zeroclaw_0.1.0-1_all.ipk
+          /tmp/luci-pkg/luci-app-zeroclaw_0.1.0-1_all.ipk
