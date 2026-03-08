@@ -38,20 +38,23 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Clone zeroclaw source
-      run: git clone https://github.com/zeroclaw-labs/zeroclaw.git
-    
     - name: Download zeroclaw binary
       uses: actions/download-artifact@v4
       with:
         name: zeroclaw-aarch64
-        path: zeroclaw/target/aarch64-unknown-linux-musl/release/
+        path: /tmp/zeroclaw-binary
+    
+    - name: Verify binary exists
+      run: |
+        ls -la /tmp/zeroclaw-binary/
+        file /tmp/zeroclaw-binary/zeroclaw
     
     - name: Copy zeroclaw binary to package
       run: |
         mkdir -p openwrt-zeroclaw/zeroclaw/files/
-        cp zeroclaw/target/aarch64-unknown-linux-musl/release/zeroclaw openwrt-zeroclaw/zeroclaw/files/
+        cp /tmp/zeroclaw-binary/zeroclaw openwrt-zeroclaw/zeroclaw/files/
         chmod +x openwrt-zeroclaw/zeroclaw/files/zeroclaw
+        ls -la openwrt-zeroclaw/zeroclaw/files/
     
     - name: Build aarch64 packages
       uses: openwrt/gh-action-sdk@v5
