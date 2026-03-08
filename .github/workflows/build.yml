@@ -44,27 +44,78 @@ jobs:
         name: zeroclaw-aarch64
         path: /tmp/zeroclaw-binary
     
-    - name: Verify binary exists
+    - name: Create zeroclaw ipk structure
       run: |
-        ls -la /tmp/zeroclaw-binary/
-        file /tmp/zeroclaw-binary/zeroclaw
-    
-    - name: Copy zeroclaw binary to package
+        mkdir -p /tmp/zeroclaw-pkg/data/usr/bin
+        mkdir -p /tmp/zeroclaw-pkg/data/etc/config
+        mkdir -p /tmp/zeroclaw-pkg/data/etc/init.d
+        mkdir -p /tmp/zeroclaw-pkg/control
+        
+        cp /tmp/zeroclaw-binary/zeroclaw /tmp/zeroclaw-pkg/data/usr/bin/
+        chmod +x /tmp/zeroclaw-pkg/data/usr/bin/zeroclaw
+        
+        cp feeds/zeroclaw/files/zeroclaw.config /tmp/zeroclaw-pkg/data/etc/config/zeroclaw
+        cp feeds/zeroclaw/files/zeroclaw.init /tmp/zeroclaw-pkg/data/etc/init.d/zeroclaw
+        chmod +x /tmp/zeroclaw-pkg/data/etc/init.d/zeroclaw
+        
+        cd /tmp/zeroclaw-pkg/control
+        echo "Package: zeroclaw" > control
+        echo "Version: 0.1.0-1" >> control
+        echo "Architecture: aarch64_generic" >> control
+        echo "Description: ZeroClaw proxy tool" >> control
+        echo "Section: net" >> control
+        echo "Priority: optional" >> control
+        echo "Maintainer: gcy529" >> control
+        echo "Depends: libc" >> control
+        
+        echo "2.0" > /tmp/zeroclaw-pkg/debian-binary
+        
+        cd /tmp/zeroclaw-pkg
+        tar -czvf control.tar.gz ./control
+        tar -czvf data.tar.gz ./data
+        
+        mv control.tar.gz /tmp/zeroclaw-pkg/
+        mv data.tar.gz /tmp/zeroclaw-pkg/
+        
+        cd /tmp/zeroclaw-pkg
+        tar -czvf zeroclaw_0.1.0-1_aarch64_generic.ipk ./debian-binary ./control.tar.gz ./data.tar.gz
+        
+    - name: Create luci-app-zeroclaw ipk structure
       run: |
-        mkdir -p zeroclaw-package/zeroclaw/files/
-        cp /tmp/zeroclaw-binary/zeroclaw zeroclaw-package/zeroclaw/files/
-        chmod +x zeroclaw-package/zeroclaw/files/zeroclaw
-        ls -la zeroclaw-package/zeroclaw/files/
-    
-    - name: Build aarch64 packages
-      uses: openwrt/gh-action-sdk@v5
-      env:
-        ARCH: aarch64_generic-openwrt-22.03
-        FEEDNAME: zeroclaw
-        PACKAGES: zeroclaw luci-app-zeroclaw
-    
+        mkdir -p /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/controller
+        mkdir -p /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/model/cbi
+        mkdir -p /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/view/zeroclaw
+        mkdir -p /tmp/luci-app-zeroclaw-pkg/control
+        
+        cp feeds/zeroclaw/luci-app-zeroclaw/luasrc/controller/zeroclaw.lua /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/controller/
+        cp feeds/zeroclaw/luci-app-zeroclaw/luasrc/model/cbi/zeroclaw.lua /tmp/luci-app-zeroclaw-pkg/data/usr/lib/lua/luci/model/cbi/
+        
+        cd /tmp/luci-app-zeroclaw-pkg/control
+        echo "Package: luci-app-zeroclaw" > control
+        echo "Version: 0.1.0-1" >> control
+        echo "Architecture: all" >> control
+        echo "Description: ZeroClaw LuCI interface" >> control
+        echo "Section: luci" >> control
+        echo "Priority: optional" >> control
+        echo "Maintainer: gcy529" >> control
+        echo "Depends: luci,zeroclaw" >> control
+        
+        echo "2.0" > /tmp/luci-app-zeroclaw-pkg/debian-binary
+        
+        cd /tmp/luci-app-zeroclaw-pkg
+        tar -czvf control.tar.gz ./control
+        tar -czvf data.tar.gz ./data
+        
+        mv control.tar.gz /tmp/luci-app-zeroclaw-pkg/
+        mv data.tar.gz /tmp/luci-app-zeroclaw-pkg/
+        
+        cd /tmp/luci-app-zeroclaw-pkg
+        tar -czvf luci-app-zeroclaw_0.1.0-1_all.ipk ./debian-binary ./control.tar.gz ./data.tar.gz
+        
     - name: Upload packages
       uses: actions/upload-artifact@v4
       with:
         name: zeroclaw-packages-aarch64
-        path: bin/packages/*/zeroclaw/*.ipk
+        path: |
+          /tmp/zeroclaw-pkg/zeroclaw_0.1.0-1_aarch64_generic.ipk
+          /tmp/luci-app-zeroclaw-pkg/luci-app-zeroclaw_0.1.0-1_all.ipk
